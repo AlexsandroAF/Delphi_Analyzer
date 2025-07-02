@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório de Análise de Código Delphi</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Cabeçalho -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Relatório de Análise de Código Delphi</h1>
+            <p class="text-gray-600">Gerado em: {{ timestamp | datetime }}</p>
+        </header>
+
+        <!-- Resumo Executivo -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Resumo Executivo</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <p class="text-sm text-blue-600">Arquivos Analisados</p>
+                    <p class="text-2xl font-bold">{{ total_files }}</p>
+                </div>
+                <div class="bg-red-50 p-4 rounded-lg">
+                    <p class="text-sm text-red-600">Total de Problemas</p>
+                    <p class="text-2xl font-bold">{{ metrics.total_issues }}</p>
+                </div>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <p class="text-sm text-yellow-600">Média por Arquivo</p>
+                    <p class="text-2xl font-bold">{{ "%.2f" | format(metrics.avg_issues_per_file) }}</p>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <p class="text-sm text-purple-600">Problemas Críticos</p>
+                    <p class="text-2xl font-bold">{{ metrics.files_with_critical_issues }}</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Gráficos -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4">Distribuição por Severidade</h3>
+                <canvas id="severityChart"></canvas>
+            </div>
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-xl font-semibold mb-4">Tipos de Problemas</h3>
+                <canvas id="typesChart"></canvas>
+            </div>
+        </section>
+
+        {% if dependency_metrics %}
+        <!-- Métricas de Dependência -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Análise de Dependências</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 border rounded-lg">
+                    <p class="text-sm text-gray-600">Total de Units</p>
+                    <p class="text-xl font-bold">{{ dependency_metrics.total_units }}</p>
+                </div>
+                <div class="p-4 border rounded-lg">
+                    <p class="text-sm text-gray-600">Dependências</p>
+                    <p class="text-xl font-bold">{{ dependency_metrics.total_dependencies }}</p>
+                </div>
+                <div class="p-4 border rounded-lg">
+                    <p class="text-sm text-gray-600">Dependências Circulares</p>
+                    <p class="text-xl font-bold">{{ dependency_metrics.circular_dependencies }}</p>
+                </div>
+            </div>
+            {% if plots.dependencies %}
+            <div class="mt-4">
+                <img src="{{ plots.dependencies }}" alt="Gráfico de Dependências" class="w-full">
+            </div>
+            {% endif %}
+        </section>
+        {% endif %}
+
+        <!-- Detalhes por Arquivo -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Detalhes por Arquivo</h2>
+            {% for file in files_with_issues %}
+            <div class="mb-6 p-4 border rounded-lg">
+                <h3 class="text-xl font-semibold mb-2">{{ file.file_path }}</h3>
+                <div class="flex items-center mb-2">
+                    <span class="mr-2">Prioridade:</span>
+                    <span class="px-2 py-1 rounded text-white text-sm" style="background-color: {{ file.priority | severity_color }}">
+                        {{ file.priority }}
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <h4 class="font-semibold mb-2">Métricas:</h4>
+                    <dl class="grid grid-cols-2 gap-2">
+                    {% for key, value in file.metrics.items() %}
+                        <dt class="text-gray-600">{{ key }}:</dt>
+                        <dd>{{ value }}</dd>
+                    {% endfor %}
+                    </dl>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-2">Problemas:</h4>
+                    {% for issue in file.issues %}
+                    <div class="mb-4 p-3 rounded" style="background-color: {{ issue.severity | severity_color }}10">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="font-semibold">{{ issue.type }}</span>
+                            <span class="px-2 py-1 rounded text-white text-sm"
+                                  style="background-color: {{ issue.severity | severity_color }}">
+                                Severidade {{ issue.severity }}
+                            </span>
+                        </div>
+                        <p class="mb-2">{{ issue.description }}</p>
+                        <p class="text-sm text-gray-600">Localização: {{ issue.location }}</p>
+                        {% if issue.suggested_fix %}
+                        <div class="mt-2">
+                            <p class="text-sm font-semibold">Sugestão de correção:</p>
+                            <pre class="bg-gray-800 text-white p-2 rounded mt-1 overflow-x-auto">{{ issue.suggested_fix }}</pre>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </section>
+
+        <!-- Recomendações -->
+        <section class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Recomendações</h2>
+            <ul class="space-y-2">
+            {% if metrics.files_with_critical_issues > 0 %}
+                <li class="flex items-center text-red-600">
+                    <span class="mr-2">🚨</span>
+                    <strong>URGENTE:</strong> Existem {{ metrics.files_with_critical_issues }} arquivos com problemas críticos.
+                </li>
+            {% endif %}
+            {% if issues_by_severity[4] > 0 or issues_by_severity[5] > 0 %}
+                <li class="flex items-center text-orange-600">
+                    <span class="mr-2">⚠️</span>
+                    <strong>Alta Prioridade:</strong> {{ issues_by_severity[4] + issues_by_severity[5] }} problemas de severidade alta.
+                </li>
+            {% endif %}
+            {% if issues_by_severity[3] > 0 %}
+                <li class="flex items-center text-yellow-600">
+                    <span class="mr-2">📝</span>
+                    <strong>Média Prioridade:</strong> {{ issues_by_severity[3] }} problemas de severidade média.
+                </li>
+            {% endif %}
+            </ul>
+        </section>
+
+        <!-- Métricas de API -->
+        <section class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-2xl font-semibold mb-4">Métricas de API</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 border rounded-lg">
+                    <p class="text-sm text-gray-600">Custo Total</p>
+                    <p class="text-xl font-bold">${{ "%.2f" | format(metrics.api_cost) }}</p>
+                </div>
+                <div class="p-4 border rounded-lg">
+                    <p class="text-sm text-gray-600">Total de Tokens</p>
+                    <p class="text-xl font-bold">{{ metrics.api_tokens }}</p>
+                </div>
+                <div class="p-4 border rounded-lg">
+                    <p class="text-sm text-gray-600">Média por Análise</p>
+                    <p class="text-xl font-bold">{{ "%.2f" | format(metrics.api_tokens / total_files) }}</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Configuração dos gráficos
+        const severityData = {
+            labels: Object.keys({{ issues_by_severity | tojson }}),
+            datasets: [{
+                label: 'Problemas por Severidade',
+                data: Object.values({{ issues_by_severity | tojson }}),
+                backgroundColor: [
+                    '#4caf50', '#8bc34a', '#ffc107', '#ff9800', '#f44336'
+                ]
+            }]
+        };
+
+        const typesData = {
+            labels: Object.keys({{ issues_by_type | tojson }}),
+            datasets: [{
+                label: 'Problemas por Tipo',
+                data: Object.values({{ issues_by_type | tojson }}),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        };
+
+        // Renderiza gráficos
+        new Chart(document.getElementById('severityChart'), {
+            type: 'pie',
+            data: severityData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    },
+                    title: {
+                        display: true,
+                        text: 'Distribuição por Severidade'
+                    }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('typesChart'), {
+            type: 'bar',
+            data: typesData,
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Problemas por Tipo'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

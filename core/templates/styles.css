@@ -1,0 +1,124 @@
+/* Estilos adicionais para o relatório */
+
+/* Animações suaves */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Estilo para código */
+pre {
+    font-family: 'Fira Code', 'Consolas', monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #1a1a1a;
+    color: #ffffff;
+    overflow-x: auto;
+    position: relative;
+}
+
+pre::-webkit-scrollbar {
+    height: 8px;
+    background-color: #2d2d2d;
+}
+
+pre::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 4px;
+}
+
+/* Badges de severidade */
+.severity-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.severity-1 { background-color: #4caf50; color: white; }
+.severity-2 { background-color: #8bc34a; color: white; }
+.severity-3 { background-color: #ffc107; color: black; }
+.severity-4 { background-color: #ff9800; color: white; }
+.severity-5 { background-color: #f44336; color: white; }
+
+/* Cards de métricas */
+.metric-card {
+    transition: transform 0.2s;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Tabelas */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table th,
+.data-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.data-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+}
+
+.data-table tr:hover {
+    background-color: #f1f5f9;
+}
+
+/* Tooltips */
+.tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tooltip:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem;
+    background-color: #333;
+    color: white;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+    z-index: 10;
+}
+
+/* Impressão */
+@media print {
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+
+    .shadow-md {
+        box-shadow: none;
+    }
+
+    .bg-gray-100 {
+        background-color: white;
+    }
+
+    pre {
+        border: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        color: #1a1a1a;
+    }
+}

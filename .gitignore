@@ -1,0 +1,48 @@
+# Arquivos de configuração local
+config.local.yml
+.env
+.env.key
+
+# Diretórios de dados
+/backups/
+/logs/
+*.db
+*.yml
+
+# Cache do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+venv/
+env/
+.env/
+
+# Arquivos de IDE
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Arquivos temporários
+*.tmp
+*.bak
+*.swp
+*~
+
+# Arquivos de build
+/build/
+/dist/
+*.egg-info/
+
+# Arquivos de log
+*.log
+logs/
+*.log.*
+
+# Arquivos do Delphi
+*.dcu
+*.~*
+*.local
+/db_bkp/

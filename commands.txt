@@ -1,0 +1,14 @@
+# Analisar projeto
+python main.py analyze ./meu-projeto -f html -f pdf
+
+# Analisar arquivo específico
+python main.py analyze-file ./src/unit1.pas --fix
+
+# Monitorar mudanças
+python main.py monitor
+
+# Ver estatísticas
+python main.py stats
+
+# Limpar arquivos antigos
+python main.py cleanup --days 30
